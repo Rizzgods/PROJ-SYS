@@ -41,14 +41,13 @@ DEPARTMENTS = [
 ]
 
 class Borrow_History(models.Model):
-    Borrower_Name = models.CharField(max_length=100)
+    Borrower_Name = models.ForeignKey('user', on_delete=models.CASCADE)
     item = models.ForeignKey('Items', on_delete=models.CASCADE)  # Make sure 'Items' is defined elsewhere
-    Professor_Name = models.CharField(max_length=100)
-    department = models.CharField(max_length=100, choices=DEPARTMENTS, default='ceit')
+    Professor_Name = models.ForeignKey('Prof', on_delete=models.CASCADE)
     Room = models.CharField(max_length=100)
     Time_borrowed = models.DateTimeField(default=timezone.now)
     Time_returned = models.DateTimeField(null=True, blank=True)
-    Borrower_Selfie = models.ImageField(upload_to='selfies/')  # Specify an upload directory
+     # Specify an upload directory
 
     def save(self, *args, **kwargs):
         self.Time_borrowed = timezone.now()
@@ -56,3 +55,18 @@ class Borrow_History(models.Model):
 
     def __str__(self):
         return f'{self.Borrower_Name} - {str(self.item)}'
+
+
+class user (models.Model):
+    Name = models.CharField(max_length=100)
+    RFID = models.CharField(max_length=100)
+    course = models.CharField(max_length=100, choices=DEPARTMENTS, default='ceit')
+    student_No = models.CharField(max_length=7)
+    Selfie = models.ImageField(upload_to='selfies/') 
+
+    def __str__(self):
+        return self.Name
+
+class Prof (models.Model):
+    Name = models.CharField(max_length=100)
+    Department = models.CharField(max_length=100, choices=DEPARTMENTS, default='ceit')
