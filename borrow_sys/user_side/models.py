@@ -41,7 +41,7 @@ DEPARTMENTS = [
 ]
 
 class Borrow_History(models.Model):
-    Borrower_Name = models.ForeignKey('user', on_delete=models.CASCADE)
+    Borrower_Name = models.ForeignKey('Students', on_delete=models.CASCADE)
     item = models.ForeignKey('Items', on_delete=models.CASCADE)  # Make sure 'Items' is defined elsewhere
     Professor_Name = models.ForeignKey('Prof', on_delete=models.CASCADE)
     Room = models.CharField(max_length=100)
@@ -57,12 +57,12 @@ class Borrow_History(models.Model):
         return f'{self.Borrower_Name} - {str(self.item)}'
 
 
-class user (models.Model):
+class Students (models.Model):
     Name = models.CharField(max_length=100)
-    RFID = models.CharField(max_length=100)
     course = models.CharField(max_length=100, choices=DEPARTMENTS, default='ceit')
     student_No = models.CharField(max_length=7)
-    Selfie = models.ImageField(upload_to='selfies/') 
+    RFID = models.CharField(max_length=10, null=True)
+    pic = models.ImageField(upload_to='selfies/', null=True) 
 
     def __str__(self):
         return self.Name
