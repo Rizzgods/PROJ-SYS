@@ -74,7 +74,7 @@ def check_rfid(request):
     if request.method == 'POST':
         rfid = request.POST.get('rfid', None)
         if rfid:
-            # Check if RFID exists in Students table
+            # Check if RFID exists in Students tablesdas
             if Students.objects.filter(RFID=rfid).exists():
                 return HttpResponse('{"exists": true}', content_type='application/json')
             else:
