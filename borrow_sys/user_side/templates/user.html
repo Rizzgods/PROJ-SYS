@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Form</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -22,6 +21,16 @@
         .hidden {
             display: none;
         }
+        .modal-body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #video, #capturedImage, #canvas {
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -30,9 +39,7 @@
             <div class="col-md-6">
                 <div class="form-container">
                     <h2 class="form-heading text-center">User Registration Form</h2>
-                    
                     <form id="userForm" method="post" action="{% url 'submit_user_form' %}" enctype="multipart/form-data">
-
                         {% csrf_token %}
                         <!-- Name Field -->
                         <div class="mb-3">
@@ -65,15 +72,18 @@
                         <!-- RFID Field -->
                         <div class="mb-3">
                             <label for="rfid" class="form-label">RFID</label>
-                            <input type="text" class="form-control" id="rfid" name="RFID" maxlength="10" required>
+                            <input type="password" class="form-control" id="rfid" name="RFID" maxlength="10" required>
                             {% if form.RFID.errors %}
                                 <div class="text-danger">{{ form.RFID.errors }}</div>
                             {% endif %}
                         </div>
                         <!-- Picture Field -->
-                        <div class="mb-3">
-                            <label for="pic" class="form-label">Picture</label>
-                            <input type="file" class="form-control" id="pic" name="pic">
+                        <div class="mb-3 d-flex align-items-center">
+                            <label for="pic" class="form-label me-2">Picture</label>
+                            <input type="file" class="form-control me-2" id="pic" name="pic">
+                            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#cameraModal">
+                                Capture Image
+                            </button>
                             {% if form.pic.errors %}
                                 <div class="text-danger">{{ form.pic.errors }}</div>
                             {% endif %}
@@ -87,6 +97,92 @@
             </div>
         </div>
     </div>
+
+    <!-- Camera Modal -->
+    <div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cameraModalLabel">Capture Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <video id="video">Video stream not available.</video>
+                    <canvas id="canvas" class="hidden"></canvas>
+                    <img id="capturedImage" class="hidden" alt="Captured Image">
+                    <button id="capture" class="btn btn-primary mt-2">Capture</button>
+                    <button id="saveImage" class="btn btn-primary mt-2 hidden">Save Image</button>
+                    <button id="revert" class="btn btn-secondary mt-2 hidden">Capture Another</button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Return to Forms</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Script to handle camera and capture
+        (function() {
+            var video = document.getElementById('video');
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
+            var fileName = document.getElementById('Name')
+            var captureButton = document.getElementById('capture');
+            var saveButton = document.getElementById('saveImage');
+            var revertButton = document.getElementById('revert');
+            var picInput = document.getElementById('pic');
+            var capturedImage = document.getElementById('capturedImage');
+
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(function(err) {
+                    console.log("An error occurred: " + err);
+                });
+
+            captureButton.addEventListener('click', function() {
+                var width = video.videoWidth;
+                var height = video.videoHeight;
+                canvas.width = width;
+                canvas.height = height;
+                context.drawImage(video, 0, 0, width, height);
+                canvas.classList.remove('hidden');
+                video.classList.add('hidden');
+                saveButton.classList.remove('hidden');
+                captureButton.classList.add('hidden');
+                revertButton.classList.remove('hidden');
+            });
+
+            saveButton.addEventListener('click', function() {
+                canvas.toBlob(function(blob) {
+                    var fileName = document.getElementById('Name').value.trim();
+                    var file = new File([blob], fileName, { type: "image/png" });
+                    var dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    picInput.files = dataTransfer.files;
+
+                    // Show the captured image
+                    var url = URL.createObjectURL(blob);
+                    capturedImage.src = url;
+                    capturedImage.classList.remove('hidden');
+                    canvas.classList.add('hidden');
+                    saveButton.classList.add('hidden');
+                    revertButton.classList.remove('hidden');
+                });
+            });
+
+            revertButton.addEventListener('click', function() {
+                capturedImage.classList.add('hidden');
+                video.classList.remove('hidden');
+                captureButton.classList.remove('hidden');
+                saveButton.classList.add('hidden');
+                revertButton.classList.add('hidden');
+            });
+        })();
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
