@@ -6,7 +6,12 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('home', views.home, name='home'),
     path('submit_user_form/', views.submit_user_form, name='submit_user_form'),
-    path('success/', views.success, name='success'),  # Define a success view
+    path('form/', views.form, name='form'),
+    path('entries', views.entries, name="entries"),
+    path('validate_rfid/', views.validate_rfid, name='validate_rfid'),
+    path('fail/', views.fail, name='fail'),
+    path('submitBorrow', views.submitBorrow, name='submitBorrow'),
+    path('check-rfid/', views.check_rfid, name='check_rfid'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
     

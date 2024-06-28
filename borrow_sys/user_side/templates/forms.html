@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/user_side.css' %}">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .form-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-heading {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="form-container">
+                    <h2 class="form-heading text-center">Borrow Registration Form</h2>
+                    <form id="userForm" method="post" action="{% url 'submitBorrow' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <!-- Professor Field -->
+                        <div class="mb-3">
+                            <label for="Professor_Name" class="form-label">Professor</label>
+                            <select class="form-select" id="Professor_Name" name="Professor_Name" required>
+                                {% for professor in professors %}
+                                    <option value="{{ professor.pk }}">{{ professor.Name }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.Professor_Name.errors %}
+                                <div class="text-danger">{{ form.Professor_Name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Room Field -->
+                        <div class="mb-3">
+                            <label for="Room" class="form-label">Room</label>
+                            <input type="text" class="form-control" id="Room" name="Room" maxlength="100" required>
+                            {% if form.Room.errors %}
+                                <div class="text-danger">{{ form.Room.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Item Field -->
+                        <div class="mb-3">
+                            <label for="item" class="form-label">Item to be Borrowed</label>
+                            <select class="form-select" id="item" name="item" required>
+                                {% for item in items %}
+                                    <option value="{{ item.pk }}">{{ item.item }} no.{{ item.number }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.item.errors %}
+                                <div class="text-danger">{{ form.item.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Expected Time Return Field -->
+                        <div class="mb-3">
+                            <label for="Exp_Time_Ret" class="form-label">Expected Time Return</label>
+                            <input type="time" class="form-control" id="Exp_Time_Ret" name="Exp_Time_Ret" required>
+                            {% if form.Exp_Time_Ret.errors %}
+                                <div class="text-danger">{{ form.Exp_Time_Ret.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Scan ID Button -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanModal">Scan ID</button>
+
+                        <!-- Hidden Modal for Scan ID -->
+                        <div class="modal fade" id="scanModal" tabindex="-1" aria-labelledby="scanModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="scanModalLabel">Scan ID</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- Placeholder for Scan ID instructions -->
+                                        <p>Scan your ID...</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <!-- Button to trigger RFID check -->
+                                        <button type="button" class="btn btn-primary" onclick="checkRFID()">Check RFID</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="submit" class="btn btn-success btn-block">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function checkRFID() {
+            // Implement AJAX to check RFID against Students table
+            // Example AJAX call with jQuery
+            $.ajax({
+                url: '{% url "check_rfid" %}',
+                method: 'POST',
+                data: {
+                    'rfid': 'value_to_check',  // Replace with actual RFID value
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.exists) {
+                        alert('RFID exists!');  // Replace with your logic
+                    } else {
+                        alert('RFID does not exist.');  // Replace with your logic
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    alert('Error occurred while checking RFID.');
+                    console.log(xhr.status + ': ' + xhr.responseText); // Log error for debugging
+                }
+            });
+        }
+    </script>
+</body>
+</html>

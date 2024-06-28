@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT OFFICE Borrowing System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .btn-scan {
+            padding: 40px 100px; /* Adjust padding to increase button size */
+            border-radius: 20px; /* Rounded corners */
+            font-size: 30px; /* Increase font size */
+            text-transform: uppercase; /* Convert text to uppercase */
+            letter-spacing: 1px; /* Add letter spacing */
+            background-color: green; /* Change background color to green */
+            border: none; /* Remove border */
+        }
+
+        .btn-register {
+            padding: 10px 20px; /* Smaller padding */
+            border-radius: 10px; /* Rounded corners */
+            font-size: 16px; /* Smaller font size */
+            text-transform: uppercase; /* Convert text to uppercase */
+            letter-spacing: 1px; /* Add letter spacing */
+            background-color: blue; /* Change background color to blue */
+            border: none; /* Remove border */
+            margin-top: 10px; /* Add margin to separate from scan button */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-center">
+            <h1>Welcome to the PLV IT OFFICE Borrowing System</h1>
+            <p class="lead">Click the button below to scan your RFID:</p>
+            <!-- Scan ID button -->
+            <button class="btn btn-primary btn-scan" id="btnScan" data-bs-toggle="modal" data-bs-target="#scanModal">Scan RFID</button>
+            <!-- Register button -->
+            
+        </div>
+        <br>
+        <div class="text-center">
+            <h5>No Account yet?</h5>
+            <button class="btn btn-primary btn-register" id="btnRegister">Register Instead</button> 
+            
+        </div>
+            
+        </div>
+    </div>
+
+    <!-- Scan Modal -->
+    <div class="modal fade" id="scanModal" tabindex="-1" aria-labelledby="scanModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scanModalLabel">RFID Scanned</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Scanning RFID...</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // Function to simulate automatic RFID scanning
+        function simulateRFIDScan() {
+            var rfidValue = ""; // Start with an empty string for RFID input
+
+            // Event listener for keypress on document to capture RFID input
+            document.addEventListener('keypress', function(event) {
+                rfidValue += event.key; // Append key press to RFID value
+
+                // Check if RFID input reaches 10 characters
+                if (rfidValue.length === 10) {
+                    // Log the RFID value to the console for debugging
+                    console.log('RFID Scanned:', rfidValue); 
+                    
+                    // Send AJAX request to validate the RFID
+                    fetch("{% url 'validate_rfid' %}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken
+                        },
+                        body: JSON.stringify({ "rfid": rfidValue })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.valid) {
+                            // Redirect to success page
+                            window.location.href = "{% url 'success' %}";
+                        } else {
+                            // Show an error message (optional)
+                            window.location.href = "{% url 'fail' %}";
+                        }
+                    });
+                }
+            });
+        }
+
+        // Event listener for modal shown event (when Scan Modal is shown)
+        var scanModal = document.getElementById('scanModal');
+        scanModal.addEventListener('shown.bs.modal', function () {
+            // Simulate RFID scan when modal is shown
+            simulateRFIDScan();
+        });
+    </script>
+</body>
+</html>
