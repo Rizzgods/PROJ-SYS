@@ -19,24 +19,24 @@
         }
 
         .btn-scan {
-            padding: 40px 100px; /* Adjust padding to increase button size */
-            border-radius: 20px; /* Rounded corners */
-            font-size: 30px; /* Increase font size */
-            text-transform: uppercase; /* Convert text to uppercase */
-            letter-spacing: 1px; /* Add letter spacing */
-            background-color: green; /* Change background color to green */
-            border: none; /* Remove border */
+            padding: 40px 100px;
+            border-radius: 20px;
+            font-size: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background-color: green;
+            border: none;
         }
 
         .btn-register {
-            padding: 10px 20px; /* Smaller padding */
-            border-radius: 10px; /* Rounded corners */
-            font-size: 16px; /* Smaller font size */
-            text-transform: uppercase; /* Convert text to uppercase */
-            letter-spacing: 1px; /* Add letter spacing */
-            background-color: blue; /* Change background color to blue */
-            border: none; /* Remove border */
-            margin-top: 10px; /* Add margin to separate from scan button */
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background-color: blue;
+            border: none;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -45,22 +45,15 @@
         <div class="text-center">
             <h1>Welcome to the PLV IT OFFICE Borrowing System</h1>
             <p class="lead">Click the button below to scan your RFID:</p>
-            <!-- Scan ID button -->
             <button class="btn btn-primary btn-scan" id="btnScan" data-bs-toggle="modal" data-bs-target="#scanModal">Scan RFID</button>
-            <!-- Register button -->
-            
         </div>
         <br>
         <div class="text-center">
             <h5>No Account yet?</h5>
-            <button class="btn btn-primary btn-register" id="btnRegister">Register Instead</button> 
-            
-        </div>
-            
+            <button class="btn btn-primary btn-register" id="btnRegister">Register Instead</button>
         </div>
     </div>
 
-    <!-- Scan Modal -->
     <div class="modal fade" id="scanModal" tabindex="-1" aria-labelledby="scanModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -96,20 +89,15 @@
         }
         const csrftoken = getCookie('csrftoken');
 
-        // Function to simulate automatic RFID scanning
         function simulateRFIDScan() {
-            var rfidValue = ""; // Start with an empty string for RFID input
+            var rfidValue = "";
 
-            // Event listener for keypress on document to capture RFID input
             document.addEventListener('keypress', function(event) {
-                rfidValue += event.key; // Append key press to RFID value
+                rfidValue += event.key;
 
-                // Check if RFID input reaches 10 characters
                 if (rfidValue.length === 10) {
-                    // Log the RFID value to the console for debugging
                     console.log('RFID Scanned:', rfidValue); 
-                    
-                    // Send AJAX request to validate the RFID
+
                     fetch("{% url 'validate_rfid' %}", {
                         method: "POST",
                         headers: {
@@ -121,10 +109,8 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.valid) {
-                            // Redirect to success page
-                            window.location.href = "{% url 'success' %}";
+                            window.location.href = "{% url 'form' %}";
                         } else {
-                            // Show an error message (optional)
                             window.location.href = "{% url 'fail' %}";
                         }
                     });
@@ -132,11 +118,14 @@
             });
         }
 
-        // Event listener for modal shown event (when Scan Modal is shown)
         var scanModal = document.getElementById('scanModal');
         scanModal.addEventListener('shown.bs.modal', function () {
-            // Simulate RFID scan when modal is shown
             simulateRFIDScan();
+        });
+
+        var regClick = document.getElementById('btnRegister');
+        regClick.addEventListener('click', function(){
+            window.location.href= "{% url 'home' %}"
         });
     </script>
 </body>

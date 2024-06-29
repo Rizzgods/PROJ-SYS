@@ -1,10 +1,12 @@
+<!-- borrow_registration.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Form</title>
+    <title>Borrow Registration Form</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/user_side.css' %}">
     <style>
@@ -25,11 +27,24 @@
 <body>
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <div class="form-container">
                     <h2 class="form-heading text-center">Borrow Registration Form</h2>
                     <form id="userForm" method="post" action="{% url 'submitBorrow' %}" enctype="multipart/form-data">
                         {% csrf_token %}
+                        <!-- Borrower Name Field -->
+                        <div class="mb-3">
+                            <label for="Professor_Name" class="form-label">students</label>
+                            <select class="form-select" id="Borrower_Name" name="Borrower_Name" required>
+                                {% for students in students %}
+                                    <option value="{{ students.pk }}">{{ students.Name }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.Borrower_Name.errors %}
+                                <div class="text-danger">{{ form.Borrower_Name.errors }}</div>
+                            {% endif %}
+                        </div>
+
                         <!-- Professor Field -->
                         <div class="mb-3">
                             <label for="Professor_Name" class="form-label">Professor</label>
@@ -40,15 +55,6 @@
                             </select>
                             {% if form.Professor_Name.errors %}
                                 <div class="text-danger">{{ form.Professor_Name.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Room Field -->
-                        <div class="mb-3">
-                            <label for="Room" class="form-label">Room</label>
-                            <input type="text" class="form-control" id="Room" name="Room" maxlength="100" required>
-                            {% if form.Room.errors %}
-                                <div class="text-danger">{{ form.Room.errors }}</div>
                             {% endif %}
                         </div>
 
@@ -65,34 +71,40 @@
                             {% endif %}
                         </div>
 
-                        <!-- Expected Time Return Field -->
+                        <!-- Room Field -->
                         <div class="mb-3">
-                            <label for="Exp_Time_Ret" class="form-label">Expected Time Return</label>
-                            <input type="time" class="form-control" id="Exp_Time_Ret" name="Exp_Time_Ret" required>
-                            {% if form.Exp_Time_Ret.errors %}
-                                <div class="text-danger">{{ form.Exp_Time_Ret.errors }}</div>
+                            <label for="Room" class="form-label">Room</label>
+                            <input type="text" class="form-control" id="Room" name="Room" required>
+                            {% if form.Room.errors %}
+                                <div class="text-danger">{{ form.Room.errors }}</div>
                             {% endif %}
                         </div>
 
-                        <!-- Scan ID Button -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanModal">Scan ID</button>
+                        <!-- Expected Time Return Field -->
+                        
 
-                        <!-- Hidden Modal for Scan ID -->
+                        <!-- RFID Field -->
+                        <input type="hidden" id="RFID" name="RFID">
+
+                        <!-- Scan RFID Button -->
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-primary" onclick="openScanModal()">Scan RFID</button>
+                        </div>
+
+                        <!-- Hidden Modal for Scan RFID -->
                         <div class="modal fade" id="scanModal" tabindex="-1" aria-labelledby="scanModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="scanModalLabel">Scan ID</h5>
+                                        <h5 class="modal-title" id="scanModalLabel">Scan RFID</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <!-- Placeholder for Scan ID instructions -->
-                                        <p>Scan your ID...</p>
+                                        <p id="rfidInstructions">Please scan the RFID tag...</p>
+                                        <input type="text" id="scannedRFID" class="form-control" placeholder="Scan RFID here..." maxlength="10">
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <!-- Button to trigger RFID check -->
-                                        <button type="button" class="btn btn-primary" onclick="checkRFID()">Check RFID</button>
                                     </div>
                                 </div>
                             </div>
@@ -109,27 +121,39 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        function checkRFID() {
-            // Implement AJAX to check RFID against Students table
-            // Example AJAX call with jQuery
-            $.ajax({
-                url: '{% url "check_rfid" %}',
-                method: 'POST',
-                data: {
-                    'rfid': 'value_to_check',  // Replace with actual RFID value
-                    'csrfmiddlewaretoken': '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    if (response.exists) {
-                        alert('RFID exists!');  // Replace with your logic
-                    } else {
-                        alert('RFID does not exist.');  // Replace with your logic
-                    }
-                },
-                error: function(xhr, errmsg, err) {
-                    alert('Error occurred while checking RFID.');
-                    console.log(xhr.status + ': ' + xhr.responseText); // Log error for debugging
+        function openScanModal() {
+            $('#scanModal').modal('show');
+            // Clear any previous value from scannedRFID field
+            document.getElementById('scannedRFID').value = '';
+            // Listen for 10-character input in the scannedRFID field
+            document.getElementById('scannedRFID').addEventListener('input', function() {
+                var scannedRFID = this.value;
+                if (scannedRFID.length === 10) {
+                    // Send AJAX request to fetch student details
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url "scan_rfid" %}',
+                        data: {
+                            'rfid': scannedRFID,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Update the Borrower Name field in the form
+                                document.getElementById('Borrower_Name').value = response.student_name;
+                                document.getElementById('RFID').value = scannedRFID;
+                            } else {
+                                alert(response.message);
+                            }
+                            // Close the modal after setting Borrower Name
+                            $('#scanModal').modal('hide');
+                        },
+                        error: function() {
+                            alert('Error scanning RFID');
+                        }
+                    });
                 }
             });
         }

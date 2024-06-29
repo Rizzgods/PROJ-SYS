@@ -11,7 +11,11 @@ urlpatterns = [
     path('validate_rfid/', views.validate_rfid, name='validate_rfid'),
     path('fail/', views.fail, name='fail'),
     path('submitBorrow', views.submitBorrow, name='submitBorrow'),
-    path('check-rfid/', views.check_rfid, name='check_rfid'),
+    path('borrow/', views.submitBorrow, name='submitBorrow'),
+    
+    path('scan-rfid/', views.scan_rfid, name='scan_rfid'),
+    path('borrow-form/<int:student_id>/', views.borrow_form, name='borrow_form'),
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
     
