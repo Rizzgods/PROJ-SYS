@@ -88,19 +88,16 @@ def scan_rfid(request):
         rfid = request.POST.get('rfid')
         try:
             student = Students.objects.get(RFID=rfid)
-            response_data = {
+            response = {
                 'success': True,
-                'student_name': student.Name,
-                'student_id': student.id,
+                'student_name': student.Name
             }
         except Students.DoesNotExist:
-            response_data = {
+            response = {
                 'success': False,
-                'message': 'RFID not found.',
+                'message': 'RFID not found'
             }
-        return JsonResponse(response_data)
-    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
-
+        return JsonResponse(response)
 
 from django.shortcuts import render
 from .models import Students, Items, Prof

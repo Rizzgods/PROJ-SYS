@@ -43,13 +43,14 @@ class Items(models.Model):
         return self.item + ' no.' + self.number
 
 class Borrow_History(models.Model):
-    Borrower_Name = models.ForeignKey('Students', on_delete=models.CASCADE, null=True,blank=True) #reference student table
+    Borrower_Name = models.CharField(max_length=100, null=True,blank=True) #reference student table
     item = models.ForeignKey('Items', on_delete=models.CASCADE)  #reference item table
     Professor_Name = models.ForeignKey('Prof', on_delete=models.CASCADE, null=True,blank=True)
     Room = models.CharField(max_length=100, null=True,blank=True)
-
-
-    
+    Exp_Time_Ret = models.TimeField(null=True)
+    Date_Borrowed = models.DateTimeField(default=timezone.now, null=True)
+    Time_Ret = models.TimeField(null=True)
+    Date_Returned = models.DateTimeField(null=True)
 
     def save(self, *args, **kwargs):
         self.Time_borrowed = timezone.now()

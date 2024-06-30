@@ -32,17 +32,12 @@
                     <h2 class="form-heading text-center">Borrow Registration Form</h2>
                     <form id="userForm" method="post" action="{% url 'submitBorrow' %}" enctype="multipart/form-data">
                         {% csrf_token %}
+                        
                         <!-- Borrower Name Field -->
-                        <div class="mb-3">
-                            <label for="Professor_Name" class="form-label">students</label>
-                            <select class="form-select" id="Borrower_Name" name="Borrower_Name" required>
-                                {% for students in students %}
-                                    <option value="{{ students.pk }}">{{ students.Name }}</option>
-                                {% endfor %}
-                            </select>
-                            {% if form.Borrower_Name.errors %}
-                                <div class="text-danger">{{ form.Borrower_Name.errors }}</div>
-                            {% endif %}
+                        <div class="mb-3 d-flex align-items-center">
+                            <label for="Borrower_Name" class="form-label me-2">Borrower Name</label>
+                            <input type="text" class="form-control" id="Borrower_Name" name="Borrower_Name" readonly>
+                            <button type="button" class="btn btn-primary ms-2" onclick="openScanModal()">Scan RFID</button>
                         </div>
 
                         <!-- Professor Field -->
@@ -81,15 +76,16 @@
                         </div>
 
                         <!-- Expected Time Return Field -->
-                        
+                        <div class="mb-3">
+                            <label for="Exp_Time_Ret" class="form-label">Expected Time Return</label>
+                            <input type="time" class="form-control" id="Exp_Time_Ret" name="Exp_Time_Ret" required>
+                            {% if form.Exp_Time_Ret.errors %}
+                                <div class="text-danger">{{ form.Exp_Time_Ret.errors }}</div>
+                            {% endif %}
+                        </div>
 
                         <!-- RFID Field -->
                         <input type="hidden" id="RFID" name="RFID">
-
-                        <!-- Scan RFID Button -->
-                        <div class="mb-3">
-                            <button type="button" class="btn btn-primary" onclick="openScanModal()">Scan RFID</button>
-                        </div>
 
                         <!-- Hidden Modal for Scan RFID -->
                         <div class="modal fade" id="scanModal" tabindex="-1" aria-labelledby="scanModalLabel" aria-hidden="true">
@@ -101,7 +97,6 @@
                                     </div>
                                     <div class="modal-body">
                                         <p id="rfidInstructions">Please scan the RFID tag...</p>
-                                        <input type="text" id="scannedRFID" class="form-control" placeholder="Scan RFID here..." maxlength="10">
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -123,39 +118,43 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
+        var rfidBuffer = '';
+
         function openScanModal() {
             $('#scanModal').modal('show');
-            // Clear any previous value from scannedRFID field
-            document.getElementById('scannedRFID').value = '';
-            // Listen for 10-character input in the scannedRFID field
-            document.getElementById('scannedRFID').addEventListener('input', function() {
-                var scannedRFID = this.value;
-                if (scannedRFID.length === 10) {
-                    // Send AJAX request to fetch student details
-                    $.ajax({
-                        type: 'POST',
-                        url: '{% url "scan_rfid" %}',
-                        data: {
-                            'rfid': scannedRFID,
-                            'csrfmiddlewaretoken': '{{ csrf_token }}'
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                // Update the Borrower Name field in the form
-                                document.getElementById('Borrower_Name').value = response.student_name;
-                                document.getElementById('RFID').value = scannedRFID;
-                            } else {
-                                alert(response.message);
-                            }
-                            // Close the modal after setting Borrower Name
-                            $('#scanModal').modal('hide');
-                        },
-                        error: function() {
-                            alert('Error scanning RFID');
+            rfidBuffer = '';
+            document.addEventListener('keypress', captureRFID);
+        }
+
+        function captureRFID(event) {
+            rfidBuffer += event.key;
+            if (rfidBuffer.length === 10) {
+                // Send AJAX request to fetch student details
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "scan_rfid" %}',
+                    data: {
+                        'rfid': rfidBuffer,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update the Borrower Name field in the form
+                            document.getElementById('Borrower_Name').value = response.student_name;
+                            document.getElementById('RFID').value = rfidBuffer;
+                        } else {
+                            alert(response.message);
                         }
-                    });
-                }
-            });
+                        // Close the modal after setting Borrower Name
+                        $('#scanModal').modal('hide');
+                        document.removeEventListener('keypress', captureRFID);
+                    },
+                    error: function() {
+                        alert('Error scanning RFID');
+                        document.removeEventListener('keypress', captureRFID);
+                    }
+                });
+            }
         }
     </script>
 </body>
