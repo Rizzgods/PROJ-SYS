@@ -34,11 +34,15 @@
                         {% csrf_token %}
                         
                         <!-- Borrower Name Field -->
-                        <div class="mb-3 d-flex align-items-center">
-                            <label for="Borrower_Name" class="form-label me-2">Borrower Name</label>
-                            <input type="text" class="form-control" id="Borrower_Name" name="Borrower_Name" readonly>
-                            <button type="button" class="btn btn-primary ms-2" onclick="openScanModal()">Scan RFID</button>
+                        <div class="mb-3">
+                            <label for="Borrower_Name" class="form-label">Borrower Name</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="Borrower_Name" name="Borrower_Name" readonly placeholder="Scan to verify again">
+                                <button type="button" class="btn btn-primary ms-2" onclick="openScanModal()">Scan RFID</button>
+                            </div>
                         </div>
+                        
+                        
 
                         <!-- Professor Field -->
                         <div class="mb-3">
